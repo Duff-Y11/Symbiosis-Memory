@@ -1,3 +1,5 @@
+🚀 Symbiosis-Memory: An open research project exploring human-like memory for AI assistants.
+
 # Symbiosis-Memory
 
 **Symbiosis-Memory** is an experimental project that explores how to design a **human-like memory architecture** for AI assistants.
