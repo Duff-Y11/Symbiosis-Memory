@@ -76,3 +76,10 @@ Local HTTP API (no external deps):
 - Explain: `curl -s 'http://127.0.0.1:8787/memories/1/why'`
 
 See `docs/DESIGN.md` for full design.
+
+### Enable LLM Extraction (OpenAI)
+
+- Set API Key env var (PowerShell): `setx OPENAI_API_KEY "<your-key>"`
+- Ensure config uses hybrid/llm mode and a model:
+  - `python -m sm.cli --db 'Symbiosis-Memory/data/symbiosis.db' config --set extractor.mode=hybrid llm.model=gpt-4o-mini`
+- By default, when `OPENAI_API_KEY` is present and mode is `hybrid|llm`, the extractor will call OpenAI Chat Completions with a JSON-only prompt and merge results with heuristic extraction (in `hybrid`).

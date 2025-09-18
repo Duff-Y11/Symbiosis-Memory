@@ -150,6 +150,54 @@ def cmd_explain(args: argparse.Namespace) -> None:
     print(json.dumps(exp, ensure_ascii=False, indent=2))
 
 
+def _set_nested(cfg: Dict[str, Any], key: str, value: Any) -> None:
+    parts = key.split(".")
+    cur = cfg
+    for p in parts[:-1]:
+        if p not in cur or not isinstance(cur[p], dict):
+            cur[p] = {}
+        cur = cur[p]
+    cur[parts[-1]] = value
+
+
+def _parse_val(s: str):
+    # Try JSON first
+    try:
+        return json.loads(s)
+    except Exception:
+        pass
+    # Simple literals
+    low = s.lower()
+    if low in ("true", "false"):
+        return low == "true"
+    try:
+        if "." in s:
+            return float(s)
+        return int(s)
+    except Exception:
+        return s
+
+
+def cmd_config(args: argparse.Namespace) -> None:
+    db_path = args.db or get_default_db_path()
+    conn = _open_db(db_path)
+    cfg = get_config(conn)
+    if args.show:
+        print(json.dumps(cfg, ensure_ascii=False, indent=2))
+        return
+    if args.set:
+        for kv in args.set:
+            if "=" not in kv:
+                print(json.dumps({"error": f"invalid --set '{kv}', expected key=value"}, ensure_ascii=False))
+                return
+            k, v = kv.split("=", 1)
+            _set_nested(cfg, k, _parse_val(v))
+        set_config(conn, cfg)
+        print(json.dumps({"ok": True, "config": cfg}, ensure_ascii=False, indent=2))
+        return
+    print(json.dumps({"error": "use --show or --set"}, ensure_ascii=False))
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="sm", description="Symbiosis-Memory CLI (v0.2)")
     p.add_argument("--db", help="Path to SQLite DB (default: ./data/symbiosis.db)")
@@ -188,6 +236,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("explain", help="Explain a memory's score breakdown")
     sp.add_argument("--id", type=int, required=True)
     sp.set_defaults(func=cmd_explain)
+
+    sp = sub.add_parser("config", help="Show or set configuration")
+    sp.add_argument("--show", action="store_true", help="Show current config")
+    sp.add_argument("--set", nargs="*", help="Set keys, e.g. extractor.mode=hybrid llm.model=gpt-4o-mini")
+    sp.set_defaults(func=cmd_config)
 
     return p
 

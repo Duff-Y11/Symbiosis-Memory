@@ -14,7 +14,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "llm": {
         "provider": "openai",
         "endpoint": "",
-        "model": "",
+        "model": "gpt-4o-mini",
         "api_key_env": "OPENAI_API_KEY",
         "timeout_s": 8,
     },
@@ -177,4 +177,3 @@ def tx(conn: sqlite3.Connection):
 
 def iso_now() -> str:
     return datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f")
-
