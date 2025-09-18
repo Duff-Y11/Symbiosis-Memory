@@ -42,3 +42,37 @@ Discussions, issues, and pull requests are welcome for:
 
 ## 📜 License
 MIT License
+
+---
+
+## Quickstart (v0.2 prototype)
+
+CLI (Python required):
+
+1) Set module path and init database
+   - PowerShell:
+     - `$env:PYTHONPATH='Symbiosis-Memory/src'`
+     - `python -m sm.cli --db 'Symbiosis-Memory/data/symbiosis.db' init`
+
+2) Add a turn (auto-extract enabled for user)
+   - `Write-Output 'My name is Alex and I like JRPGs' | python -m sm.cli --db 'Symbiosis-Memory/data/symbiosis.db' add-turn --session s1 --role user --text -`
+
+3) Get context (short-term + top-K mid-term)
+   - `python -m sm.cli --db 'Symbiosis-Memory/data/symbiosis.db' get-context --session s1 -k 20`
+
+4) Recompute scores / cleanup
+   - `python -m sm.cli --db 'Symbiosis-Memory/data/symbiosis.db' gc`
+
+5) List memories
+   - `python -m sm.cli --db 'Symbiosis-Memory/data/symbiosis.db' list --layer mid --limit 20`
+
+Local HTTP API (no external deps):
+
+- Start server: `python -m sm.api --db 'Symbiosis-Memory/data/symbiosis.db' --host 127.0.0.1 --port 8787`
+- Add turn: `curl -s -X POST http://127.0.0.1:8787/turns -H 'Content-Type: application/json' -d '{"session_id":"s1","role":"user","text":"I like JRPGs","auto_extract":true}'`
+- Get context: `curl -s 'http://127.0.0.1:8787/context?session_id=s1&k=20'`
+- List memories: `curl -s 'http://127.0.0.1:8787/memories?layer=mid&limit=50'`
+- GC: `curl -s -X POST http://127.0.0.1:8787/gc`
+- Explain: `curl -s 'http://127.0.0.1:8787/memories/1/why'`
+
+See `docs/DESIGN.md` for full design.
